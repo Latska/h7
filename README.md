@@ -184,12 +184,7 @@ Total run time: 219.061 ms
 The Salt states seemed to be working, but now for testing the actual proxy settings if it's working by using the 'curl' command and also with Fire fox:
 
 lauri@latska:/srv/salt/squid2$ curl www.google.com
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html><head>
-<meta type="copyright" content="Copyright (C) 1996-2020 The Squid Software Foundation and contributors">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>ERROR: The requested URL could not be retrieved</title>
-<style type="text/css"><!--
+
  /*
  * Copyright (C) 1996-2020 The Squid Software Foundation and contributors
  *
@@ -307,6 +302,74 @@ And to test out any other website, unable to connect:
 
 
 
+Now for the very last task I decided to add state that would reload the squid.service if changes are made in the squid.conf file:
+
+squid:    
+  service.running:
+    - enable: True
+    - reload: True
+    - watch:
+      - file: /etc/squid/squid.conf
+
+
+
+
+
+The final productions:
+
+squid.conf:
+
+squidie:
+  pkg.installed:
+    - pkgs:
+      - squid
+
+/etc/squid/squid.conf:
+  file.managed:
+    - source: salt://squid2/squid.conf
+
+/etc/squid/restricted_sites:
+  file.managed:
+    - source: salt://squid2/sites/restricted_sites
+
+/etc/squid/blocked_sites:
+  file.managed:
+    - source: salt://squid2/sites/blocked_sites
+
+/etc/squid/allowed_sites:
+  file.managed:
+    - source: salt://squid2/sites/allowed_sites
+
+/etc/squid/allowed_ips.txt:
+  file.managed:
+    - source: salt://squid2/allowed_ips.txt
+
+squid:    
+  service.running:
+    - enable: True
+    - reload: True
+    - watch:
+      - file: /etc/squid/squid.conf
+
+
+
+Salt:
+
+lauri@latska:/srv/salt/squid2$ tree
+.
+├── allowed_ips.txt
+├── init.sls
+├── sites
+│   ├── allowed_sites
+│   ├── blocked_sites
+│   └── restricted_sites
+└── squid.conf
+
+1 directory, 6 files
+
+init.sls:
+
+![image](https://user-images.githubusercontent.com/103587811/168916355-5ee37b6e-cab6-4f80-ab18-e4fd5bbeef06.png)
 
 
 
