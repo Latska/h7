@@ -20,7 +20,8 @@
     * Creator: Lauri Immonen
     * State as of now: Completed
     * Testing environment: Debian 11
-    * Link to repo: (https://github.com/Latska/squid)
+    * Link to repo: https://github.com/Latska/squid)
+    * Link to course: https://terokarvinen.com/2021/configuration-management-systems-2022-spring/
 
 I already had installed Salt Master & Slave on my system, but [here's a great guide for that](https://terokarvinen.com/2018/salt-quickstart-salt-stack-master-and-slave-on-ubuntu-linux/)
 
@@ -156,7 +157,7 @@ And also enable port 8080 on ufw:
     Rules updated
     Rules updated (v6)
 
-    lauri@latska:/srv/salt/squid2$ sudo netstat -plnd
+    lauri@latska:/srv/salt/squid$ sudo netstat -plnd
     tcp6       0      0 :::8080                 :::*                    LISTEN      44779/(squid-1)     
 
 
@@ -173,7 +174,9 @@ I made a new directory /sites/ and added a restricted_sites file with "www.googl
 
 Add the following to the the squid.conf file: 
 The first line is path to the .txt files with allowed IP-addresses.
+
 The second line is the path for the URLS that will be restricted from our IP-addresses
+
 The third line is is the actual rule for the config file.
 
     acl allowed_ips src "/etc/squid/allowed_ips.txt"  
@@ -189,7 +192,7 @@ And also added the following to the init.sls -file:
 
     /etc/squid/allowed_ips.txt:
       file.managed:
-        - source: salt://squid2/allowed_ips.txt
+        - source: salt://squid/allowed_ips.txt
 
  
     
@@ -209,7 +212,7 @@ And to try out the changes by salt state.apply command:
 
 The Salt states seemed to be working, but now for testing the actual proxy settings if it's working by using the 'curl' command and also with Fire fox:
 
-    lauri@latska:/srv/salt/squid2$ curl www.google.com
+    lauri@latska:/srv/salt/squid$ curl www.google.com
 
      /*
      * Copyright (C) 1996-2020 The Squid Software Foundation and contributors
@@ -276,14 +279,14 @@ The last test was only allow access to a certain sites from our network:
 
 Made a new file with the allowed sites (and also removed the 'fi' from banned words list:
 
-    lauri@latska:/srv/salt/squid2$ cd sites/
-    lauri@latska:/srv/salt/squid2/sites$ sudo micro allowed_sites
-    lauri@latska:/srv/salt/squid2/sites$ cat allowed_sites 
+    lauri@latska:/srv/salt/squid$ cd sites/
+    lauri@latska:/srv/salt/squid/sites$ sudo micro allowed_sites
+    lauri@latska:/srv/salt/squid/sites$ cat allowed_sites 
     .terokarvinen.com
     .haaga-helia.fi
 
-    lauri@latska:/srv/salt/squid2/sites$ sudo micro blocked_sites 
-    lauri@latska:/srv/salt/squid2/sites$ cat blocked_sites 
+    lauri@latska:/srv/salt/squid/sites$ sudo micro blocked_sites 
+    lauri@latska:/srv/salt/squid/sites$ cat blocked_sites 
     google
     yle
 
@@ -298,12 +301,12 @@ And the following to the init.sls -file:
 
     /etc/squid/allowed_sites:
       file.managed:
-        - source: salt://squid2/sites/allowed_sites
+        - source: salt://squid/sites/allowed_sites
 
 
 And try out the changes with salt state.apply command and restart the Squid.service:
 
-      lauri@latska:/srv/salt/squid2$ sudo salt '*' state.apply squid2
+      lauri@latska:/srv/salt/squid$ sudo salt '*' state.apply squid
       orjatar:
       Summary for orjatar
       ------------
@@ -312,7 +315,7 @@ And try out the changes with salt state.apply command and restart the Squid.serv
       ------------
       Total states run:     6
 
-    lauri@latska:/srv/salt/squid2$ sudo systemctl restart squid
+    lauri@latska:/srv/salt/squid$ sudo systemctl restart squid
 
 
 And to test out the newest proxy settings. Looks like we can access haaga-helia.fi & terokarvinen.com, which were the only ones we allowed:
@@ -376,23 +379,23 @@ And tested it by editing the .conf file for once more and running salt state.app
 
       /etc/squid/squid.conf:
         file.managed:
-          - source: salt://squid2/squid.conf
+          - source: salt://squid/squid.conf
 
       /etc/squid/restricted_sites:
         file.managed:
-          - source: salt://squid2/sites/restricted_sites
+          - source: salt://squid/sites/restricted_sites
 
       /etc/squid/blocked_sites:
         file.managed:
-          - source: salt://squid2/sites/blocked_sites
+          - source: salt://squid/sites/blocked_sites
 
       /etc/squid/allowed_sites:
         file.managed:
-          - source: salt://squid2/sites/allowed_sites
+          - source: salt://squid/sites/allowed_sites
 
       /etc/squid/allowed_ips.txt:
         file.managed:
-          - source: salt://squid2/allowed_ips.txt
+          - source: salt://squid/allowed_ips.txt
 
       squid:    
         service.running:
@@ -405,7 +408,7 @@ And tested it by editing the .conf file for once more and running salt state.app
 
 ## Salt:
 
-      lauri@latska:/srv/salt/squid2$ tree
+      lauri@latska:/srv/salt/squid$ tree
       .
       ├── allowed_ips.txt
       ├── init.sls
@@ -421,6 +424,19 @@ And tested it by editing the .conf file for once more and running salt state.app
 
 ![image](https://user-images.githubusercontent.com/103587811/168916355-5ee37b6e-cab6-4f80-ab18-e4fd5bbeef06.png)
 
+
+## Sources:
+
+- Tero Karvinen - Configuration management systems 2022 
+https://terokarvinen.com/2021/configuration-management-systems-2022-spring/
+
+- STATE MODULES - https://docs.saltproject.io/en/latest/ref/states/all/
+
+- squid-cache.org - http://www.squid-cache.org/
+
+- How To Setup and Configure a Proxy Server – Squid Proxy - https://devopscube.com/setup-and-configure-proxy-server/
+
+- How to Set Up Squid Proxy for Private Connections on Ubuntu 20.04 - https://www.digitalocean.com/community/tutorials/how-to-set-up-squid-proxy-on-ubuntu-20-04
 
 
 
