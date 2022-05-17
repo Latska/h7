@@ -94,7 +94,7 @@ squid:
 /etc/squid/squid.conf:
   file.managed:
     - source: salt://squid/squid.conf
-    
+ 
  
 And to test it out by running salt state.apply command:
 
@@ -258,9 +258,8 @@ Made a new file with the allowed sites (and also removed the 'fi' from banned wo
 lauri@latska:/srv/salt/squid2$ cd sites/
 lauri@latska:/srv/salt/squid2/sites$ sudo micro allowed_sites
 lauri@latska:/srv/salt/squid2/sites$ cat allowed_sites 
-https://terokarvinen.com/
-https://github.com/
-https://www.haaga-helia.fi/fi
+.terokarvinen.com
+.haaga-helia.fi
 
 auri@latska:/srv/salt/squid2/sites$ sudo micro blocked_sites 
 lauri@latska:/srv/salt/squid2/sites$ cat blocked_sites 
@@ -295,9 +294,15 @@ Total states run:     6
 lauri@latska:/srv/salt/squid2$ sudo systemctl restart squid
 
 
-And to test out the newest proxy settings. Looks like we can access haaga-helia.fi & terokarvinen.com
+And to test out the newest proxy settings. Looks like we can access haaga-helia.fi & terokarvinen.com, which were the only ones we allowed:
 
 ![image](https://user-images.githubusercontent.com/103587811/168892159-0ccd2df0-8535-45ae-a1b0-369971875752.png)
+
+
+
+And to test out any other website, unable to connect:
+
+![image](https://user-images.githubusercontent.com/103587811/168905923-e79a42b0-4142-4648-a93d-679ba34a8e98.png)
 
 
 
