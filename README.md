@@ -143,13 +143,29 @@ lauri@latska:/srv/salt/squid$ sudo mkdir sites
 lauri@latska:/srv/salt/squid$ cd sites/
 lauri@latska:/srv/salt/squid/sites$ sudoedit restricted_sites
 lauri@latska:/srv/salt/squid/sites$ cat restricted_sites 
-.google.com
+http:google.com
 
-And also the following to the init.sls -file:
+Add the following to the the squid.conf file: 
+The first line is path to the .txt files with allowed IP-addresses.
+The second line is the path for the URLS that will be restricted from our IP-addresses
+The third line is is the actual rule for the config file.
+
+acl allowed_ips src "/etc/squid/allowed_ips.txt"  
+acl restrictedsites dstdomain "/etc/squid/restricted_sites"
+http_access deny restricted_sites 
+
+
+And also added the following to the init.sls -file:
 
 /etc/squid/restricted_sites:
   file.managed:
     - source: salt://squid/sites/restricted_sites
+    
+/etc/squid/allowed_ips.txt:
+  file.managed:
+    - source: salt://squid2/allowed_ips.txt
+   
+ 
     
     
 And to try out the changes by salt state.apply command:
@@ -157,16 +173,152 @@ And to try out the changes by salt state.apply command:
 lauri@latska:/srv/salt/squid$ sudo salt '*' state.apply squid
 orjatar:
 changes:  
-              ----------
-              diff:
-                  New file
-              mode:
-                  0644
-
 Summary for orjatar
 ------------
-Succeeded: 3 (changed=1)
+Succeeded: 4 (changed=3)
 Failed:    0
+------------
+Total states run:     4
+Total run time: 219.061 ms
+
+The Salt states seemed to be working, but now for testing the actual proxy settings if it's working by using the 'curl' command and also with Fire fox:
+
+lauri@latska:/srv/salt/squid2$ curl www.google.com
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+<meta type="copyright" content="Copyright (C) 1996-2020 The Squid Software Foundation and contributors">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>ERROR: The requested URL could not be retrieved</title>
+<style type="text/css"><!--
+ /*
+ * Copyright (C) 1996-2020 The Squid Software Foundation and contributors
+ *
+ * Squid software is distributed under GPLv2+ license and includes
+ * contributions from numerous individuals and organizations.
+ * Please see the COPYING and CONTRIBUTORS files for details.
+ */
+
+![image](https://user-images.githubusercontent.com/103587811/168886483-6b61a884-5393-4f7c-8fdd-7146aa64f788.png)
+
+
+And to test out that other sites are available:
+
+![image](https://user-images.githubusercontent.com/103587811/168886733-19c2924f-d0bc-4175-9dfc-2d11da15ee02.png)
+
+
+Looks like it's working as planned. Next up I wanted to try blocking sites by simply using words such as 'google', 'yle' or 'fi' instead of actual URLs:
+First I made new file 'blocked_sites' in /squid/sites with those blockable words.
+
+lauri@latska:/srv/salt/squid$ cd sites/
+lauri@latska:/srv/salt/squid/sites$ sudoedit blocked_sites
+[sudo] password for lauri: 
+lauri@latska:/srv/salt/squid/sites$ cat blocked_sites 
+google
+yle
+fi
+
+
+Then added the following lines to the squid.conf -file:
+
+acl blocked_sites url_regex -i "/etc/squid/blocked_sites" 
+http_access deny blocked_sites 
+
+
+Added the following to the init.sls file:
+
+/etc/squid/blocked_sites:
+  file.managed:
+    - source: salt://squid/sites/blocked_sites
+
+Applied the changes with state.apply -command and restarted Squid:
+
+
+lauri@latska:/srv/salt/squid$ sudo salt '*' state.apply squid
+Summary for orjatar
+------------
+Succeeded: 5 (changed=2)
+Failed:    0
+------------
+lauri@latska:/srv/salt/squid$ sudo systemctl restart squid
+
+
+And to test out if the new proxy settings are working: Looks like https://yle.fi is no longer working:
+
+![image](https://user-images.githubusercontent.com/103587811/168889785-cf7ca694-7e75-47b9-b52d-2df2860a73fe.png)
+
+
+As well as iltalehti.fi (as we set 'fi' in the banned_sites list), but wikipedia.org is working as it should:
+![image](https://user-images.githubusercontent.com/103587811/168890421-50f4cd22-a4fa-4f41-884e-ce7444614a2a.png)
+
+
+The last test was only allow access to a certain sites from our network:
+
+Made a new file with the allowed sites (and also removed the 'fi' from banned words list:
+
+lauri@latska:/srv/salt/squid2$ cd sites/
+lauri@latska:/srv/salt/squid2/sites$ sudo micro allowed_sites
+lauri@latska:/srv/salt/squid2/sites$ cat allowed_sites 
+https://terokarvinen.com/
+https://github.com/
+https://www.haaga-helia.fi/fi
+
+auri@latska:/srv/salt/squid2/sites$ sudo micro blocked_sites 
+lauri@latska:/srv/salt/squid2/sites$ cat blocked_sites 
+google
+yle
+
+
+Added the following to the squid.conf file, meaning that everything else should be blocked but those sites we just determined:
+
+acl allowed_sites dstdomain "/etc/squid/allowed_sites"
+http_access allow allowed_ips allowed_sites
+
+
+And the following to the init.sls -file:
+
+/etc/squid/allowed_sites:
+  file.managed:
+    - source: salt://squid2/sites/allowed_sites
+
+
+And try out the changes with salt state.apply command and restart the Squid.service:
+
+lauri@latska:/srv/salt/squid2$ sudo salt '*' state.apply squid2
+orjatar:
+Summary for orjatar
+------------
+Succeeded: 6 (changed=3)
+Failed:    0
+------------
+Total states run:     6
+
+lauri@latska:/srv/salt/squid2$ sudo systemctl restart squid
+
+
+And to test out the newest proxy settings. Looks like we can access haaga-helia.fi & terokarvinen.com
+
+![image](https://user-images.githubusercontent.com/103587811/168892159-0ccd2df0-8535-45ae-a1b0-369971875752.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
