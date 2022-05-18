@@ -170,7 +170,7 @@ I made a new directory /sites/ and added a restricted_sites file with "www.googl
     lauri@latska:/srv/salt/squid/sites$ sudoedit restricted_sites
     lauri@latska:/srv/salt/squid/sites$ cat restricted_sites 
     www.google.com
-    https://www.google.com
+
 
 
 Add the following to the the squid.conf file: 
