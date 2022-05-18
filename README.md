@@ -20,6 +20,7 @@
     * Creator: Lauri Immonen
     * State as of now: Completed
     * Testing environment: Debian 11
+    * Licence: GNU General Public License v2.0
     * Link to repo: https://github.com/Latska/squid)
     * Link to course: https://terokarvinen.com/2021/configuration-management-systems-2022-spring/
 
