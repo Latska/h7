@@ -366,6 +366,156 @@ And tested it by editing the .conf file for once more and running salt state.app
 
 
 
+## And to prove its idempotence:
+
+      lauri@latska:/srv/salt/squid2$ sudo salt '*' state.apply squid2
+            orjatar:
+            ----------
+                      ID: squidie
+                Function: pkg.installed
+                  Result: True
+                 Comment: All specified packages are already installed
+                 Started: 13:41:14.437773
+                Duration: 127.79 ms
+                 Changes:   
+            ----------
+                      ID: /etc/squid/squid.conf
+                Function: file.managed
+                  Result: True
+                 Comment: File /etc/squid/squid.conf updated
+                 Started: 13:41:14.569038
+                Duration: 37.755 ms
+                 Changes:   
+                          ----------
+                          diff:
+                              --- 
+                              +++ 
+                              @@ -31,7 +31,7 @@
+                               #http_access deny blocked_sites #blocked sites, edit later if needed
+                               #http_access deny restricted_sites  #Restricted sites, edit later if needed
+                               http_access allow localhost
+                              -http_access allow allowed_ips
+                              +#http_access allow allowed_ips
+                               http_access deny all
+                               http_port 8080
+                               coredump_dir /var/spool/squid
+            ----------
+                      ID: /etc/squid/restricted_sites
+                Function: file.managed
+                  Result: True
+                 Comment: File /etc/squid/restricted_sites is in the correct state
+                 Started: 13:41:14.606937
+                Duration: 7.678 ms
+                 Changes:   
+            ----------
+                      ID: /etc/squid/blocked_sites
+                Function: file.managed
+                  Result: True
+                 Comment: File /etc/squid/blocked_sites is in the correct state
+                 Started: 13:41:14.614749
+                Duration: 10.302 ms
+                 Changes:   
+            ----------
+                      ID: /etc/squid/allowed_sites
+                Function: file.managed
+                  Result: True
+                 Comment: File /etc/squid/allowed_sites is in the correct state
+                 Started: 13:41:14.625281
+                Duration: 8.091 ms
+                 Changes:   
+            ----------
+                      ID: /etc/squid/allowed_ips.txt
+                Function: file.managed
+                  Result: True
+                 Comment: File /etc/squid/allowed_ips.txt is in the correct state
+                 Started: 13:41:14.633548
+                Duration: 8.407 ms
+                 Changes:   
+            ----------
+                      ID: squid
+                Function: service.running
+                  Result: True
+                 Comment: Service reloaded
+                 Started: 13:41:14.690474
+                Duration: 47.389 ms
+                 Changes:   
+                          ----------
+                          squid:
+                              True
+
+            Summary for orjatar
+            ------------
+            Succeeded: 7 (changed=2)
+            Failed:    0
+
+
+lauri@latska:/srv/salt/squid2$ sudo salt '*' state.apply squid2
+
+            orjatar:
+            ----------
+                      ID: squidie
+                Function: pkg.installed
+                  Result: True
+                 Comment: All specified packages are already installed
+                 Started: 13:41:46.016658
+                Duration: 127.557 ms
+                 Changes:   
+            ----------
+                      ID: /etc/squid/squid.conf
+                Function: file.managed
+                  Result: True
+                 Comment: File /etc/squid/squid.conf is in the correct state
+                 Started: 13:41:46.149041
+                Duration: 106.911 ms
+                 Changes:   
+            ----------
+                      ID: /etc/squid/restricted_sites
+                Function: file.managed
+                  Result: True
+                 Comment: File /etc/squid/restricted_sites is in the correct state
+                 Started: 13:41:46.256148
+                Duration: 38.303 ms
+                 Changes:   
+            ----------
+                      ID: /etc/squid/blocked_sites
+                Function: file.managed
+                  Result: True
+                 Comment: File /etc/squid/blocked_sites is in the correct state
+                 Started: 13:41:46.294628
+                Duration: 29.411 ms
+                 Changes:   
+            ----------
+                      ID: /etc/squid/allowed_sites
+                Function: file.managed
+                  Result: True
+                 Comment: File /etc/squid/allowed_sites is in the correct state
+                 Started: 13:41:46.324275
+                Duration: 22.799 ms
+                 Changes:   
+            ----------
+                      ID: /etc/squid/allowed_ips.txt
+                Function: file.managed
+                  Result: True
+                 Comment: File /etc/squid/allowed_ips.txt is in the correct state
+                 Started: 13:41:46.347511
+                Duration: 26.97 ms
+                 Changes:   
+            ----------
+                      ID: squid
+                Function: service.running
+                  Result: True
+                 Comment: The service squid is already running
+                 Started: 13:41:46.375925
+                Duration: 90.068 ms
+                 Changes:   
+
+            Summary for orjatar
+            ------------
+            Succeeded: 7
+            Failed:    0
+            ------------
+            Total states run:     7
+
 
 
 
@@ -423,7 +573,7 @@ And tested it by editing the .conf file for once more and running salt state.app
 
 ## init.sls:
 
-![image](https://user-images.githubusercontent.com/103587811/168916355-5ee37b6e-cab6-4f80-ab18-e4fd5bbeef06.png)
+![image](https://user-images.githubusercontent.com/103587811/169021953-d6295030-6f80-47d3-8811-3794d8dcb778.png)
 
 
 ## Sources:
